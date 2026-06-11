@@ -1,7 +1,31 @@
-import { useState, useEffect } from 'react';
-import { Activity, Droplets, Thermometer, Wind, Clock, TrendingDown, Download, Settings, BarChart3, Home, LineChart, Database } from 'lucide-react';
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart as RechartsBarChart, Bar } from 'recharts';
-import { CircularProgress, Box, Typography } from '@mui/material';
+import { useState, useEffect } from "react";
+import {
+  Activity,
+  Droplets,
+  Thermometer,
+  Wind,
+  Clock,
+  TrendingDown,
+  Download,
+  Settings,
+  BarChart3,
+  Home,
+  LineChart,
+  Database,
+} from "lucide-react";
+import {
+  LineChart as RechartsLineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart as RechartsBarChart,
+  Bar,
+} from "recharts";
+import { CircularProgress, Box, Typography } from "@mui/material";
 
 // Mock data generator
 const generateMockData = () => {
@@ -12,96 +36,87 @@ const generateMockData = () => {
     const timestamp = new Date(timestampMs);
     data.push({
       id: `data-${timestampMs}`,
-      timestamp: timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timestamp: timestamp.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
       moisturePercent: Math.max(10, 80 - i * 3 + Math.random() * 5),
       rawValue: Math.floor(400 + i * 15 + Math.random() * 20),
       temperature: 22 + Math.random() * 3,
       humidity: 45 + Math.random() * 10,
-      status: i > 15 ? '매우 젖음' : i > 5 ? '건조 중' : '건조 완료'
+      status: i > 15 ? "매우 젖음" : i > 5 ? "건조 중" : "건조 완료",
     });
   }
   return data;
 };
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sensorData, setSensorData] = useState(generateMockData());
+  const [currentPage, setCurrentPage] = useState("dashboard");
+  const [sensorData, setSensorData] = useState<any[]>([]);
   const [isOnline, setIsOnline] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [remainingTime, setRemainingTime] = useState(0);
 
   // Simulate real-time updates
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/data");
 
-  const fetchData = async () => {
+        const data = await response.json();
 
-    try {
+        const newEntry = {
+          id: Date.now().toString(),
 
-      const response = await fetch(
-        "http://localhost:5000/data"
-      );
+          timestamp: new Date().toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
 
-      const data = await response.json();
+          moisturePercent: data.moisture,
 
-      const newEntry = {
-        id: Date.now().toString(),
+          rawValue: data.raw,
 
-        timestamp: new Date().toLocaleTimeString(
-          'ko-KR',
-          {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          }
-        ),
+          temperature: data.temperature,
 
-        moisturePercent: data.moisture,
+          humidity: data.humidity,
 
-        rawValue: data.raw,
+          status:
+            data.moisture > 30
+              ? "매우 젖음"
+              : data.moisture > 13
+                ? "건조 중"
+                : "건조 완료",
+        };
 
-        temperature: data.temperature,
+        setSensorData((prev) => [...prev.slice(-20), newEntry]);
 
-        humidity: data.humidity,
+        setRemainingTime(data.remaining_time);
 
-        status:
-          data.moisture > 30
-            ? '매우 젖음'
-            : data.moisture > 13
-            ? '건조 중'
-            : '건조 완료'
-      };
+        setLastUpdate(new Date());
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-      setSensorData(prev => [
-        ...prev.slice(-20),
-        newEntry
-      ]);
+    fetchData();
 
-      setRemainingTime(
-        data.remaining_time
-      );
+    const interval = setInterval(fetchData, 3000);
 
-      setLastUpdate(new Date());
+    return () => clearInterval(interval);
+  }, []);
 
-    } catch (error) {
-
-      console.error(error);
-
-    }
-  };
-
-  fetchData();
-
-  const interval = setInterval(
-    fetchData,
-    3000
-  );
-
-  return () => clearInterval(interval);
-
-}, []);
+  if (sensorData.length === 0) {
+    return <div>데이터 수신 중...</div>;
+  }
 
   const currentData = sensorData[sensorData.length - 1];
-  const dryingProgress = Math.min(100, ((80 - currentData.moisturePercent) / 70) * 100);
+  const dryingProgress = Math.max(
+    0,
+    Math.min(100, ((80 - currentData.moisturePercent) / (80 - 13)) * 100),
+  );
 
   const StatusCard = ({ title, value, unit, icon: Icon, trend }: any) => (
     <div className="bg-white rounded-lg p-6 shadow-md border border-gray-200">
@@ -131,9 +146,11 @@ export default function App() {
 
       <nav className="flex-1 p-4">
         <button
-          onClick={() => setCurrentPage('dashboard')}
+          onClick={() => setCurrentPage("dashboard")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-            currentPage === 'dashboard' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
+            currentPage === "dashboard"
+              ? "bg-blue-50 text-blue-600"
+              : "text-gray-700 hover:bg-gray-50"
           }`}
         >
           <Home className="w-5 h-5" />
@@ -151,9 +168,11 @@ export default function App() {
         </button> */}
 
         <button
-          onClick={() => setCurrentPage('prediction')}
+          onClick={() => setCurrentPage("prediction")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-            currentPage === 'prediction' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
+            currentPage === "prediction"
+              ? "bg-blue-50 text-blue-600"
+              : "text-gray-700 hover:bg-gray-50"
           }`}
         >
           <LineChart className="w-5 h-5" />
@@ -161,9 +180,11 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setCurrentPage('data')}
+          onClick={() => setCurrentPage("data")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-            currentPage === 'data' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
+            currentPage === "data"
+              ? "bg-blue-50 text-blue-600"
+              : "text-gray-700 hover:bg-gray-50"
           }`}
         >
           <Database className="w-5 h-5" />
@@ -171,9 +192,11 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setCurrentPage('settings')}
+          onClick={() => setCurrentPage("settings")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-            currentPage === 'settings' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
+            currentPage === "settings"
+              ? "bg-blue-50 text-blue-600"
+              : "text-gray-700 hover:bg-gray-50"
           }`}
         >
           <Settings className="w-5 h-5" />
@@ -195,18 +218,24 @@ export default function App() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl">스마트 빨래 건조 시스템</h1>
-          <p className="text-sm text-gray-500">실시간 환경 모니터링 및 건조 예측</p>
+          <p className="text-sm text-gray-500">
+            실시간 환경 모니터링 및 건조 예측
+          </p>
         </div>
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm text-gray-700">{isOnline ? 'Online' : 'Offline'}</span>
+            <div
+              className={`w-2 h-2 rounded-full ${isOnline ? "bg-green-500" : "bg-red-500"}`}
+            ></div>
+            <span className="text-sm text-gray-700">
+              {isOnline ? "Online" : "Offline"}
+            </span>
           </div>
 
           <div className="text-sm text-gray-600">
             <div>마지막 업데이트</div>
-            <div>{lastUpdate.toLocaleTimeString('ko-KR')}</div>
+            <div>{lastUpdate.toLocaleTimeString("ko-KR")}</div>
           </div>
 
           <div className="text-sm text-gray-600">
@@ -267,7 +296,7 @@ export default function App() {
                 value={dryingProgress}
                 size={120}
                 thickness={4}
-                sx={{ color: dryingProgress > 80 ? '#10b981' : '#3b82f6' }}
+                sx={{ color: dryingProgress > 80 ? "#10b981" : "#3b82f6" }}
               />
               <Box
                 sx={{
@@ -275,11 +304,11 @@ export default function App() {
                   left: 0,
                   bottom: 0,
                   right: 0,
-                  position: 'absolute',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column'
+                  position: "absolute",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
                 }}
               >
                 <Typography variant="h4" component="div" color="text.primary">
@@ -289,10 +318,15 @@ export default function App() {
             </Box>
 
             <div className="text-center">
-              <div className={`text-lg mb-2 ${
-                currentData.status === '건조 완료' ? 'text-green-600' :
-                currentData.status === '건조 중' ? 'text-blue-600' : 'text-orange-600'
-              }`}>
+              <div
+                className={`text-lg mb-2 ${
+                  currentData.status === "건조 완료"
+                    ? "text-green-600"
+                    : currentData.status === "건조 중"
+                      ? "text-blue-600"
+                      : "text-orange-600"
+                }`}
+              >
                 {currentData.status}
               </div>
 
@@ -320,12 +354,24 @@ export default function App() {
 
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-gray-600">평균 온도</span>
-              <span>{(sensorData.reduce((acc, d) => acc + d.temperature, 0) / sensorData.length).toFixed(1)}°C</span>
+              <span>
+                {(
+                  sensorData.reduce((acc, d) => acc + d.temperature, 0) /
+                  sensorData.length
+                ).toFixed(1)}
+                °C
+              </span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-gray-600">평균 습도</span>
-              <span>{(sensorData.reduce((acc, d) => acc + d.humidity, 0) / sensorData.length).toFixed(1)}%</span>
+              <span>
+                {(
+                  sensorData.reduce((acc, d) => acc + d.humidity, 0) /
+                  sensorData.length
+                ).toFixed(1)}
+                %
+              </span>
             </div>
 
             <div className="flex justify-between items-center py-2">
@@ -343,7 +389,12 @@ export default function App() {
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-gray-600">예상 완료 시각</span>
               <span className="text-blue-600">
-                {new Date(Date.now() + remainingTime * 60000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                {new Date(
+                  Date.now() + remainingTime * 60000,
+                ).toLocaleTimeString("ko-KR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             </div>
 
@@ -377,7 +428,15 @@ export default function App() {
               <YAxis domain={[0, 100]} />
               <Tooltip />
               <Legend />
-              <Line key="moisture-line" type="monotone" dataKey="moisturePercent" stroke="#3b82f6" name="수분값 (%)" strokeWidth={2} dot={false} />
+              <Line
+                key="moisture-line"
+                type="monotone"
+                dataKey="moisturePercent"
+                stroke="#3b82f6"
+                name="수분값 (%)"
+                strokeWidth={2}
+                dot={false}
+              />
             </RechartsLineChart>
           </ResponsiveContainer>
         </div>
@@ -392,8 +451,24 @@ export default function App() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line key="temperature-line" type="monotone" dataKey="temperature" stroke="#ef4444" name="온도 (°C)" strokeWidth={2} dot={false} />
-              <Line key="humidity-line" type="monotone" dataKey="humidity" stroke="#10b981" name="습도 (%)" strokeWidth={2} dot={false} />
+              <Line
+                key="temperature-line"
+                type="monotone"
+                dataKey="temperature"
+                stroke="#ef4444"
+                name="온도 (°C)"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                key="humidity-line"
+                type="monotone"
+                dataKey="humidity"
+                stroke="#10b981"
+                name="습도 (%)"
+                strokeWidth={2}
+                dot={false}
+              />
             </RechartsLineChart>
           </ResponsiveContainer>
         </div>
@@ -403,9 +478,27 @@ export default function App() {
 
   const AnalysisPage = () => {
     const comparisonData = [
-      { id: 'indoor', environment: '일반 실내', dryingTime: 120, avgTemp: 23, avgHumidity: 50 },
-      { id: 'sunny', environment: '햇빛 실내', dryingTime: 85, avgTemp: 26, avgHumidity: 42 },
-      { id: 'rainy', environment: '비오는날', dryingTime: 165, avgTemp: 21, avgHumidity: 68 }
+      {
+        id: "indoor",
+        environment: "일반 실내",
+        dryingTime: 120,
+        avgTemp: 23,
+        avgHumidity: 50,
+      },
+      {
+        id: "sunny",
+        environment: "햇빛 실내",
+        dryingTime: 85,
+        avgTemp: 26,
+        avgHumidity: 42,
+      },
+      {
+        id: "rainy",
+        environment: "비오는날",
+        dryingTime: 165,
+        avgTemp: 21,
+        avgHumidity: 68,
+      },
     ];
 
     return (
@@ -422,7 +515,12 @@ export default function App() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar key="drying-time-bar" dataKey="dryingTime" fill="#3b82f6" name="건조 시간 (분)" />
+              <Bar
+                key="drying-time-bar"
+                dataKey="dryingTime"
+                fill="#3b82f6"
+                name="건조 시간 (분)"
+              />
             </RechartsBarChart>
           </ResponsiveContainer>
         </div>
@@ -455,10 +553,13 @@ export default function App() {
     const [inputs, setInputs] = useState({
       moisture: currentData.moisturePercent.toFixed(1),
       temperature: currentData.temperature.toFixed(1),
-      humidity: currentData.humidity.toFixed(1)
+      humidity: currentData.humidity.toFixed(1),
     });
 
-    const predictedTime = Math.max(0, Math.floor((parseFloat(inputs.moisture) - 13) * 2));
+    const predictedTime = Math.max(
+      0,
+      Math.floor((parseFloat(inputs.moisture) - 13) * 2),
+    );
     const predictedCompletion = new Date(Date.now() + predictedTime * 60000);
 
     return (
@@ -472,31 +573,43 @@ export default function App() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-600 mb-2">현재 수분값 (%)</label>
+                <label className="block text-sm text-gray-600 mb-2">
+                  현재 수분값 (%)
+                </label>
                 <input
                   type="number"
                   value={inputs.moisture}
-                  onChange={(e) => setInputs({...inputs, moisture: e.target.value})}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, moisture: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-2">현재 온도 (°C)</label>
+                <label className="block text-sm text-gray-600 mb-2">
+                  현재 온도 (°C)
+                </label>
                 <input
                   type="number"
                   value={inputs.temperature}
-                  onChange={(e) => setInputs({...inputs, temperature: e.target.value})}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, temperature: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-2">현재 습도 (%)</label>
+                <label className="block text-sm text-gray-600 mb-2">
+                  현재 습도 (%)
+                </label>
                 <input
                   type="number"
                   value={inputs.humidity}
-                  onChange={(e) => setInputs({...inputs, humidity: e.target.value})}
+                  onChange={(e) =>
+                    setInputs({ ...inputs, humidity: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -509,14 +622,21 @@ export default function App() {
 
             <div className="space-y-4">
               <div className="bg-blue-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">예상 남은 건조 시간</div>
+                <div className="text-sm text-gray-600 mb-1">
+                  예상 남은 건조 시간
+                </div>
                 <div className="text-3xl text-blue-600">{predictedTime}분</div>
               </div>
 
               <div className="bg-green-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">예상 건조 완료 시각</div>
+                <div className="text-sm text-gray-600 mb-1">
+                  예상 건조 완료 시각
+                </div>
                 <div className="text-2xl text-green-600">
-                  {predictedCompletion.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                  {predictedCompletion.toLocaleTimeString("ko-KR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
 
@@ -545,28 +665,54 @@ export default function App() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Timestamp</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Moisture (%)</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Raw Value</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Temperature (°C)</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Humidity (%)</th>
-                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                  Timestamp
+                </th>
+                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                  Moisture (%)
+                </th>
+                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                  Raw Value
+                </th>
+                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                  Temperature (°C)
+                </th>
+                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                  Humidity (%)
+                </th>
+                <th className="px-6 py-3 text-left text-xs text-gray-600 uppercase tracking-wider">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sensorData.map((data) => (
                 <tr key={data.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{data.timestamp}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{data.moisturePercent.toFixed(1)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{data.rawValue}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{data.temperature.toFixed(1)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{data.humidity.toFixed(1)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {data.timestamp}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {data.moisturePercent.toFixed(1)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {data.rawValue}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {data.temperature.toFixed(1)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {data.humidity.toFixed(1)}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      data.status === '건조 완료' ? 'bg-green-100 text-green-800' :
-                      data.status === '건조 중' ? 'bg-blue-100 text-blue-800' :
-                      'bg-orange-100 text-orange-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        data.status === "건조 완료"
+                          ? "bg-green-100 text-green-800"
+                          : data.status === "건조 중"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-orange-100 text-orange-800"
+                      }`}
+                    >
                       {data.status}
                     </span>
                   </td>
@@ -589,7 +735,9 @@ export default function App() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-2">COM 포트</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                COM 포트
+              </label>
               <input
                 type="text"
                 defaultValue="COM3"
@@ -598,7 +746,9 @@ export default function App() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Baud Rate</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                Baud Rate
+              </label>
               <input
                 type="text"
                 defaultValue="9600"
@@ -613,7 +763,9 @@ export default function App() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-2">측정 주기 (초)</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                측정 주기 (초)
+              </label>
               <input
                 type="number"
                 defaultValue="3"
@@ -622,7 +774,9 @@ export default function App() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-2">건조 완료 기준 (%)</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                건조 완료 기준 (%)
+              </label>
               <input
                 type="number"
                 defaultValue="13"
@@ -637,7 +791,9 @@ export default function App() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-2">서버 주소</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                서버 주소
+              </label>
               <input
                 type="text"
                 defaultValue="http://localhost:8000"
@@ -646,7 +802,9 @@ export default function App() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-2">WebSocket 포트</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                WebSocket 포트
+              </label>
               <input
                 type="text"
                 defaultValue="8000"
@@ -661,7 +819,9 @@ export default function App() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-2">저장 경로</label>
+              <label className="block text-sm text-gray-600 mb-2">
+                저장 경로
+              </label>
               <input
                 type="text"
                 defaultValue="./data/laundry_data.csv"
@@ -686,11 +846,11 @@ export default function App() {
         <Sidebar />
 
         <div className="flex-1 overflow-auto">
-          {currentPage === 'dashboard' && <DashboardPage />}
-          {currentPage === 'analysis' && <AnalysisPage />}
-          {currentPage === 'prediction' && <PredictionPage />}
-          {currentPage === 'data' && <DataPage />}
-          {currentPage === 'settings' && <SettingsPage />}
+          {currentPage === "dashboard" && <DashboardPage />}
+          {currentPage === "analysis" && <AnalysisPage />}
+          {currentPage === "prediction" && <PredictionPage />}
+          {currentPage === "data" && <DataPage />}
+          {currentPage === "settings" && <SettingsPage />}
         </div>
       </div>
     </div>
