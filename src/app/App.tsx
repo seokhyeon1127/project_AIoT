@@ -695,7 +695,12 @@ export default function App() {
               {sensorData.map((data) => (
                 <tr
                  key={data.id}
-                className="hover:bg-blue-50 even:bg-gray-50 transition-colors"
+                className="
+                hover:bg-blue-50
+                even:bg-gray-50
+                transition-colors
+                duration-200
+                "
 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {data.timestamp}
