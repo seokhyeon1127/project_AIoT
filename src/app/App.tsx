@@ -693,7 +693,10 @@ export default function App() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sensorData.map((data) => (
-                <tr key={data.id} className="hover:bg-gray-50">
+                <tr
+                 key={data.id}
+                className="hover:bg-gray-50 even:bg-gray-50"
+>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {data.timestamp}
                   </td>
