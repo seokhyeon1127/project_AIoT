@@ -1,11 +1,32 @@
+# 스마트 빨래 건조 시스템
 
-  # 스마트 빨래 건조 대시보드 디자인
+## 프로젝트 개요
+아두이노와 IoT 센서를 활용하여 빨래의 건조 상태를 실시간으로 모니터링하고 AI 모델을 통해 남은 건조 시간을 예측하는 시스템이다.
 
-  This is a code bundle for 스마트 빨래 건조 대시보드 디자인. The original project is available at https://www.figma.com/design/t6yZuX2eJdJLN9nQJ8ldfW/%EC%8A%A4%EB%A7%88%ED%8A%B8-%EB%B9%A8%EB%9E%98-%EA%B1%B4%EC%A1%B0-%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C-%EB%94%94%EC%9E%90%EC%9D%B8.
+## 사용 기술
+- Arduino UNO
+- DHT11
+- 토양 수분 센서
+- Python Flask
+- Random Forest
+- React
+- TypeScript
 
-  ## Running the code
+## 시스템 구성
 
-  Run `npm i` to install the dependencies.
+수분센서 → Arduino
 
-  Run `npm run dev` to start the development server.
-  
+DHT11 → Arduino
+
+Arduino → Flask
+
+Flask → Random Forest
+
+Random Forest → React Dashboard
+
+## 실행 방법
+아두이노 연결 및 업로드
+backend terminal에서 python app.py 
+http://localhost:5000/data 접속
+루트(laundry-dashboard)에서 npm run dev 
+http://localhost:5173/ 접속
