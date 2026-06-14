@@ -503,7 +503,7 @@ export default function App() {
 
     return (
       <div className="p-6 space-y-6">
-        <h2 className="text-2xl">실험 데이터 분석</h2>
+        <h2 className="text-2xl" font-bold>실험 데이터 분석</h2>
 
         {/* Environment Comparison */}
         <div className="bg-white rounded-lg p-6 shadow-md border border-gray-200">
@@ -564,7 +564,7 @@ export default function App() {
 
     return (
       <div className="p-6 space-y-6">
-        <h2 className="text-2xl">건조 시간 예측</h2>
+        <h2 className="text-2xl" font-bold>건조 시간 예측</h2>
 
         <div className="grid grid-cols-2 gap-6">
           {/* Input Section */}
@@ -655,7 +655,7 @@ export default function App() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-        <h2 className="text-2xl">데이터 기록</h2>
+        <h2 className="text-2xl" font-bold>데이터 기록</h2>
         <p className="text-sm text-gray-500">
           총 {sensorData.length}개의 데이터
         </p>
@@ -741,7 +741,7 @@ export default function App() {
 
   const SettingsPage = () => (
     <div className="p-6 space-y-6">
-      <h2 className="text-2xl">시스템 설정</h2>
+      <h2 className="text-2xl" font-bold>시스템 설정</h2>
 
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-white rounded-lg p-6 shadow-md border border-gray-200">
