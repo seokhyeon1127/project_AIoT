@@ -45,7 +45,7 @@ const generateMockData = () => {
       rawValue: Math.floor(400 + i * 15 + Math.random() * 20),
       temperature: 22 + Math.random() * 3,
       humidity: 45 + Math.random() * 10,
-      status: i > 15 ? "매우 젖음" : i > 5 ? "건조 중" : "건조 완료",
+      status: i > 15 ? "젖음" : i > 5 ? "건조 중" : "건조 완료",
     });
   }
   return data;
@@ -651,9 +651,15 @@ export default function App() {
   };
 
   const DataPage = () => (
+    
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
+        <div>
         <h2 className="text-2xl">데이터 기록</h2>
+        <p className="text-sm text-gray-500">
+          총 {sensorData.length}개의 데이터
+        </p>
+      </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           <Download className="w-4 h-4" />
           CSV 다운로드
