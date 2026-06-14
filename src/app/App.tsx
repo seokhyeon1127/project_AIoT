@@ -84,7 +84,7 @@ export default function App() {
           humidity: data.humidity,
 
           status:
-            data.moisture > 30
+            data.moisture > 50
               ? "매우 젖음"
               : data.moisture > 13
                 ? "건조 중"
@@ -336,7 +336,7 @@ export default function App() {
               </div>
 
               <div className="mt-3 text-sm text-gray-500">
-                건조 완료 기준: 수분 ≤ 13%, 1분 이상 지속
+                건조 완료 기준: 수분 ≤ 13%, 30분 이상 지속
               </div>
             </div>
           </div>
@@ -404,8 +404,8 @@ export default function App() {
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <span className="text-gray-600">예측 신뢰도</span>
-              <span className="text-green-600">92.5%</span>
+              <span className="text-gray-600">평균 예측 오차</span>
+              <span className="text-green-600">8분</span>
             </div>
 
             <div className="flex justify-between items-center py-2">
