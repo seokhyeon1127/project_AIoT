@@ -660,7 +660,7 @@ export default function App() {
           총 {sensorData.length}개의 데이터
         </p>
       </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 hover:scale-105">
           <Download className="w-4 h-4" />
           CSV 다운로드
         </button>
